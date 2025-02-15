@@ -1,10 +1,11 @@
 """
-    Anthony Truelove MASc, P.Eng.
-    Python Certified Professional Programmer (PCPP1)
+Anthony Truelove MASc, P.Eng.  
+Python Certified Professional Programmer (PCPP1)
 
-    14 Feb 2025
+Copyright 2025 - Anthony Truelove  
+--> ***SEE LICENSE TERMS [HERE](../../../LICENSE)*** <--
 
-    Library of optimization test functions.
+Library of optimization test functions.
 """
 
 
