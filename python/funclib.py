@@ -11,6 +11,8 @@ Library of optimization test functions.
 
 # ==== IMPORTS ============================================================== #
 
+import math
+
 import numpy as np
 
 
@@ -241,7 +243,7 @@ def getDampedAPEPercentiles(
     percentiles_list: list, optional, default [50]
         A list of percentiles for which to extract corresponding damped
         absolute percentage error values for. Defaults to [50], in which case
-        the 50th percentile (i.e. damped mean absolute percentage error) is
+        the 50th percentile (i.e. mean damped absolute percentage error) is
         extracted.
 
     Returns
@@ -315,15 +317,29 @@ def getDampedAPEPercentiles(
 
 
 def getSurrogateEfficiency(
-    
-) -> float
+    mean_dAPE: float,
+    IQR_dAPE: float,
+    number_of_samples: int,
+    dimensionality: int
+) -> float:
     """
     Function to compute surrogate efficiency (logically, surrogate performance
     divided by surrogate cost).
 
     Parameters
     ----------
-    [...]
+    mean_dAPE: float
+        A mean damped absolute percentage error value for the surrogate.
+
+    IQR_dAPE: float
+        A value for the inter-quartile range of damped asbolute percentages for
+        the surrogate.
+
+    number_of_samples: int
+        The number of samples taken in constructing the surrogate.
+
+    dimensionality: int
+        The dimensionality (input space) of the surrogate.
 
     Returns
     -------
@@ -331,15 +347,15 @@ def getSurrogateEfficiency(
         A measure of surrogate efficiency.
     """
 
-    #[...]
-
-    return 0
+    return math.exp(
+        -1 * math.pow(number_of_samples, 1 / dimensionality)
+        * (mean_dAPE + IQR_dAPE)
+    )
 
 
 # ==== TESTS ================================================================ #
 
 if __name__ == "__main__":
-    import math
     import random
     random.seed()
 
@@ -823,6 +839,30 @@ if __name__ == "__main__":
             assert(
                 abs(test_percentile - expected_percentile) <= FLOAT_TOLERANCE
             )
+
+    except Exception as e:
+        print("\tFAIL")
+        raise e
+
+    else:
+        print("\tPASS")
+
+    #   6. surrogate efficiency function tests
+    print("testing getSurrogateEfficiency() ... ", end="", flush=True)
+
+    try:
+        #   6.1. for any arbitrary positive inputs, efficiency should be
+        #        between 0 and 1.
+        for trial in range(0, TRIAL_COUNT):
+            test_efficiency = getSurrogateEfficiency(
+                random.uniform(0, 1),
+                random.uniform(0, 1),
+                random.randint(10, 10000),
+                random.randint(2, 20)
+            )
+
+            assert(test_efficiency >= 0)
+            assert(test_efficiency <= 1)
 
     except Exception as e:
         print("\tFAIL")
