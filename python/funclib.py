@@ -9,8 +9,17 @@ Library of optimization test functions.
 """
 
 
+# ==== IMPORTS ============================================================== #
+
 import numpy as np
 
+
+# ==== CONSTANTS ============================================================ #
+
+FLOAT_TOLERANCE = 1e-6
+
+
+# ==== FUNCTIONS ============================================================ #
 
 def rastrigin(
     input_array: np.array,
@@ -208,6 +217,127 @@ def styblinskitang(
     return 0.5 * (array_sum_1 - array_sum_2 + array_sum_3)
 
 
+def getDampedAPEPercentiles(
+    prediction_array: np.array,
+    truth_array: np.array,
+    damping_threshold: float = 1,
+    percentiles_list: list = [50]
+) -> dict:
+    """
+    Function to compute and return a dictionary of damped absolute percentage
+    error (d-APE) percentiles.
+
+    Parameters
+    ----------
+    prediction_array: np.array
+        An array of predicted values, parallel to truth_array.
+
+    truth_array: np.array
+        An array of true values, parallel to prediction_array.
+
+    damping_threshold: float, optional, default 1
+        A threshold used in computing damped absolute percentage error values.
+
+    percentiles_list: list, optional, default [50]
+        A list of percentiles for which to extract corresponding damped
+        absolute percentage error values for. Defaults to [50], in which case
+        the 50th percentile (i.e. damped mean absolute percentage error) is
+        extracted.
+
+    Returns
+    -------
+    dict
+        A dictionary of damped asbolute percentage error percentiles.
+        Dictionary structure is {percentile: d-APE}.
+    """
+
+    #   1. infer array length
+    N = len(prediction_array)
+
+    #   2. check for parallel arrays
+    if len(truth_array) != N:
+        error_string = "ERROR:  getDampedAPEPercentiles()\t"
+        error_string += "input arrays are not of equal length"
+
+        raise RuntimeError(error_string)
+
+    #   3. check that the damping threshold is not too small
+    if abs(damping_threshold) <= FLOAT_TOLERANCE:
+        error_string = "ERROR:  getDampedAPEPercentiles()\t"
+        error_string += "abs(damping_threshold) must be > {}".format(
+            FLOAT_TOLERANCE
+        )
+
+        raise RuntimeError(error_string)
+
+    #   4. check that the percentiles list is non-empty
+    if len(percentiles_list) == 0:
+        error_string = "ERROR:  getDampedAPEPercentiles()\t"
+        error_string += "percentiles list is empty"
+
+        raise RuntimeError(error_string)
+
+    """
+    #   5. construct d-APE array
+    dAPE_array = np.zeros(N)
+
+    for i in range(0, N):
+        prediction = prediction_array[i]
+        truth = truth_array[i]
+
+        if abs(truth) >= damping_threshold:
+            dAPE_array[i] = abs((prediction - truth) / truth)
+
+        else:
+            dAPE_array[i] = abs((prediction - truth) / damping_threshold)
+    """
+
+    #   5. construct d-APE array (vectorized)
+    dAPE_array = np.abs(
+        np.divide(
+            np.subtract(prediction_array, truth_array),
+            np.maximum(np.abs(truth_array), damping_threshold * np.ones(N))
+        )
+    )
+
+    #   6. extract d-APE array percentiles
+    dAPE_percentiles_array = np.percentile(dAPE_array, percentiles_list)
+
+    #   7. construct return dict
+    dAPE_percentiles_dict = {}
+
+    for i in range(0, len(percentiles_list)):
+        percentile = percentiles_list[i]
+        dAPE_percentile = dAPE_percentiles_array[i]
+        dAPE_percentiles_dict[percentile] = dAPE_percentile
+
+    return dAPE_percentiles_dict
+
+
+def getSurrogateEfficiency(
+    
+) -> float
+    """
+    Function to compute surrogate efficiency (logically, surrogate performance
+    divided by surrogate cost).
+
+    Parameters
+    ----------
+    [...]
+
+    Returns
+    -------
+    float
+        A measure of surrogate efficiency.
+    """
+
+    #[...]
+
+    return 0
+
+
+# ==== TESTS ================================================================ #
+
 if __name__ == "__main__":
     import math
     import random
@@ -217,7 +347,6 @@ if __name__ == "__main__":
 
 
     CONTOUR_DENSITY = 32
-    FLOAT_TOLERANCE = 1e-6
     PLOT_DENSITY = 256
     PLOT_RANGE = 5
     TRIAL_COUNT = 100
@@ -238,7 +367,7 @@ if __name__ == "__main__":
             raise e
 
         else:
-            raise RuntimeError("expected a RuntimeError here")
+            raise RuntimeError("TEST:  expected a RuntimeError here")
 
         #   1.2. for any arbitrary input vector, output should be >= 0
         for trial in range(0, TRIAL_COUNT):
@@ -278,6 +407,9 @@ if __name__ == "__main__":
                 CONTOUR_DENSITY
             ),
             cmap="viridis",
+            extend="both",
+            antialiased=False,
+            alpha=0.95,
             zorder=2
         )
         plt.colorbar(label="Rastrigin Function")
@@ -296,17 +428,17 @@ if __name__ == "__main__":
         plt.tight_layout()
         plt.legend()
         plt.savefig(
-            "../tex/figures/Rastrigin.png",
+            "../tex/figures/test_Rastrigin.png",
             format="png",
             dpi=128
         )
 
     except Exception as e:
-        print("\tFAIL")
+        print("\t\tFAIL")
         raise e
 
     else:
-        print("\tPASS")
+        print("\t\tPASS")
 
     #   2. Rosenbrock function tests
     print("testing rosenbrock() ... ", end="", flush=True)
@@ -323,7 +455,7 @@ if __name__ == "__main__":
             raise e
 
         else:
-            raise RuntimeError("expected a RuntimeError here")
+            raise RuntimeError("TEST:  expected a RuntimeError here")
 
         #   2.2. for any arbitrary input vector, output should be >= 0
         for trial in range(0, TRIAL_COUNT):
@@ -368,6 +500,9 @@ if __name__ == "__main__":
                 )
             ),
             cmap="viridis",
+            extend="both",
+            antialiased=False,
+            alpha=0.95,
             zorder=2
         )
         plt.colorbar(label="Rosenbrock Function")
@@ -386,17 +521,17 @@ if __name__ == "__main__":
         plt.tight_layout()
         plt.legend()
         plt.savefig(
-            "../tex/figures/Rosenbrock.png",
+            "../tex/figures/test_Rosenbrock.png",
             format="png",
             dpi=128
         )
 
     except Exception as e:
-        print("\tFAIL")
+        print("\t\tFAIL")
         raise e
 
     else:
-        print("\tPASS")
+        print("\t\tPASS")
 
     #   3. Griewank function tests
     print("testing griewank() ... ", end="", flush=True)
@@ -413,7 +548,7 @@ if __name__ == "__main__":
             raise e
 
         else:
-            raise RuntimeError("expected a RuntimeError here")
+            raise RuntimeError("TEST:  expected a RuntimeError here")
 
         #   3.2. for any arbitrary input vector, output should be >= 0
         for trial in range(0, TRIAL_COUNT):
@@ -453,6 +588,9 @@ if __name__ == "__main__":
                 CONTOUR_DENSITY
             ),
             cmap="viridis",
+            extend="both",
+            antialiased=False,
+            alpha=0.95,
             zorder=2
         )
         plt.colorbar(label="Griewank Function")
@@ -471,17 +609,17 @@ if __name__ == "__main__":
         plt.tight_layout()
         plt.legend()
         plt.savefig(
-            "../tex/figures/Griewank.png",
+            "../tex/figures/test_Griewank.png",
             format="png",
             dpi=128
         )
 
     except Exception as e:
-        print("\t\tFAIL")
+        print("\t\t\tFAIL")
         raise e
 
     else:
-        print("\t\tPASS")
+        print("\t\t\tPASS")
 
     #   4. Styblinski–Tang function tests
     print("testing styblinskitang() ... ", end="", flush=True)
@@ -498,7 +636,7 @@ if __name__ == "__main__":
             raise e
 
         else:
-            raise RuntimeError("expected a RuntimeError here")
+            raise RuntimeError("TEST:  expected a RuntimeError here")
 
         #   4.2. for any arbitrary input vector of dimension D,
         #        output should be > -39.16617 * D
@@ -545,6 +683,9 @@ if __name__ == "__main__":
                 CONTOUR_DENSITY
             ),
             cmap="viridis",
+            extend="both",
+            antialiased=False,
+            alpha=0.95,
             zorder=2
         )
         plt.colorbar(label="Styblinski–Tang Function")
@@ -563,10 +704,125 @@ if __name__ == "__main__":
         plt.tight_layout()
         plt.legend()
         plt.savefig(
-            "../tex/figures/Styblinski–Tang.png",
+            "../tex/figures/test_Styblinski–Tang.png",
             format="png",
             dpi=128
         )
+
+    except Exception as e:
+        print("\t\tFAIL")
+        raise e
+
+    else:
+        print("\t\tPASS")
+
+
+    #   5. d-APE percentiles function tests
+    print("testing getDampedAPEPercentiles() ... ", end="", flush=True)
+
+    try:
+        #   5.1. pass arrays of different length (should raise)
+        try:
+            getDampedAPEPercentiles(
+                np.random.rand(100),
+                np.random.rand(200),
+                damping_threshold=1,
+                percentiles_list=[50]
+            )
+
+        except RuntimeError as e:
+            pass
+
+        except Exception as e:
+            raise e
+
+        else:
+            raise RuntimeError("TEST:  expected a RuntimeError here")
+
+        #   5.2. pass exceedingly small damping threshold (should raise)
+        try:
+            getDampedAPEPercentiles(
+                np.random.rand(100),
+                np.random.rand(100),
+                damping_threshold=0,
+                percentiles_list=[50]
+            )
+
+        except RuntimeError as e:
+            pass
+
+        except Exception as e:
+            raise e
+
+        else:
+            raise RuntimeError("TEST:  expected a RuntimeError here")
+
+        #   5.3. pass empty percentiles list (should raise)
+        try:
+            getDampedAPEPercentiles(
+                np.random.rand(100),
+                np.random.rand(100),
+                damping_threshold=1,
+                percentiles_list=[]
+            )
+
+        except RuntimeError as e:
+            pass
+
+        except Exception as e:
+            raise e
+
+        else:
+            raise RuntimeError("TEST:  expected a RuntimeError here")
+
+        #   5.4. test normal operation
+        test_prediction_array = np.array(
+            [
+                2.7713772, 2.8543618, 2.6379359, 3.5680907,
+                4.1981345, 3.7477980, 2.8567891, 1.1559992,
+                0.8527500, 1.7579608, 0.8053023, 1.4561078,
+                0.7113965, 3.0035538, 0.4478658, 1.9958152,
+                0.0217980, 0.2521098, 0.2268945, 0.2894086
+            ]
+        )
+
+        test_truth_array = np.array(
+            [
+                1.6160982, 3.7768894, 4.8624433, 1.2993779,
+                4.0063128, 2.5712496, 2.8342452, 0.7757955,
+                0.5429077, 1.1872136, 0.5479943, 3.4974758,
+                1.6411618, 4.8819121, 3.9007399, 2.6261119,
+                4.1244293, 2.6569416, 3.0827306, 3.7069864
+            ]
+        )
+
+        expected_percentiles_dict = {
+            0:   0.0079541,
+            5:   0.0458836,
+            10:  0.2207982,
+            20:  0.2546976,
+            40:  0.4283960,
+            60:  0.5733848,
+            80:  0.9084760,
+            90:  0.9332299,
+            95:  1.0322791,
+            100: 1.7459992
+        }
+
+        test_percentiles_dict = getDampedAPEPercentiles(
+            test_prediction_array,
+            test_truth_array,
+            damping_threshold=1,
+            percentiles_list=[0, 5, 10, 20, 40, 60, 80, 90, 95, 100]
+        )
+
+        for percentile in expected_percentiles_dict.keys():
+            expected_percentile = expected_percentiles_dict[percentile]
+            test_percentile = test_percentiles_dict[percentile]
+
+            assert(
+                abs(test_percentile - expected_percentile) <= FLOAT_TOLERANCE
+            )
 
     except Exception as e:
         print("\tFAIL")
@@ -575,4 +831,4 @@ if __name__ == "__main__":
     else:
         print("\tPASS")
 
-    plt.show()
+    #plt.show()

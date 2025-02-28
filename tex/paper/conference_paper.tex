@@ -58,20 +58,24 @@ sampling, optimization, surrogate modelling
 
 	Surrogate modelling has taken hold in a variety of domains in recent years. For example, \cite{Westermann_2019} reviews the application of surrogate modelling to sustainable building design. An example is provided in \cite{Liu_2023} of applying surrogate modelling to the optimal design of combustion systems, while an example is provided in \cite{Haghi_2022} of applying surrogate modelling to the optimal design of wind turbines. Yet another example is provided in \cite{vanderHoog_2018} of applying surrogate modelling to the optimization of policy and decision-making in the domain of economics. Compound these examples with the utility of machine learning models as surrogates (as mentioned in all of \cite{Westermann_2019, Liu_2023, vanderHoog_2018}) and it seems that surrogate modelling will remain a useful technique (and hence a relevant topic) for the foreseeable future.
 	
-	[to build a surrogate model, some amount of expensive sampling is unavoidable, so then ...]
+	Of course, in order to construct a surrogate model for any given use case, some amount of data is required (which implies sampling the problem space via the computationally expensive objective function). As such, there exists the notion of surrogate utility versus surrogate cost (i.e., a \textit{surrogate efficiency}), and this begs two questions:
 	
 \begin{enumerate}
-	\item \textit{[robust sampling/surrogate efficiency metric?]}
-	\item \textit{[a clear winner in terms of sampling scheme?]}
+	\item Is there a general metric for surrogate efficiency?
+	\item Is there a clear ``winner" in terms of sampling scheme?
 \end{enumerate}
+
+\noindent This paper aims to address both questions.
 
 \section{Methodology}
 
-\subsection{Robust Surrogate Efficiency Metric}
+\subsection{General Surrogate Efficiency Metric: Concepts}
 
-The concept of ``sampling efficiency" in the context of surrogate modelling is mentioned (but never precisely defined) in all of \cite{Gong_2017, Westermann_2019_2, Yin_2011}. Similarly searching the literature for references to ``surrogate efficiency" yields a single relevant result \cite{Casper_2016} (but again, it is not precisely defined). \textcolor{red}{Novelty satisfied? I see people talking about this, but it's a bit hand wavey (general benefit vs cost, essentially).}
+The concept of ``sampling efficiency" in the context of surrogate modelling is mentioned (but never precisely defined) in all of \cite{Gong_2017, Westermann_2019_2, Yin_2011}. Similarly searching the literature for references to ``surrogate efficiency" yields a single relevant result \cite{Casper_2016} (but again, it is not precisely defined). Therefore, a novel and general surrogate efficiency metric $\eta_\textrm{SM}$ is proposed as part of this work.
 
-\subsubsection{Concept}
+\subsubsection{Logic}
+
+Any measure of surrogate efficiency should express the trade-off between surrogate utility (i.e., how accurate/precise is the surrogate?) and surrogate cost (i.e., what is the computational expense to build the surrogate in the first place?). This logic is sketched out in (\ref{eqn:efficiency_concept}).
 
 \begin{equation}
 	\eta_\textrm{SM} \sim \frac{\textrm{surrogate utility}}{\textrm{surrogate cost}}
@@ -80,46 +84,59 @@ The concept of ``sampling efficiency" in the context of surrogate modelling is m
 
 \subsubsection{Surrogate Utility}
 
-[...]
+If surrogate utility is essentially a measure of surrogate accuracy and precision, then one might say that utility is inversely proportional to error (\ref{eqn:surrogate_utility_concept}).
 
 \begin{equation}
 	\textrm{surrogate utility} \propto \frac{1}{\textrm{surrogate error}}
 	\label{eqn:surrogate_utility_concept}
 \end{equation}
 
+\noindent For the sake of generality, a normalized error metric is desirable. To that end, the damped absolute percentage error (d-APE) metric is selected in this work. As per \cite{Rulff_2024}, d-APE can be expressed as
+
 \begin{equation}
-	\textrm{surrogate error} = \mu_\textrm{d-MAPE} + \sigma_\textrm{d-MAPE}
+	\textrm{d-APE} = \begin{cases}
+		\left|\frac{\widehat{y} - y}{T}\right| & \textrm{if}\;\;|y|\leq T \\
+		{} & {} \\
+		\left|\frac{\widehat{y} - y}{y}\right| & \textrm{otherwise}
+	\end{cases}
+	\label{eqn:d-APE}
+\end{equation}
+
+\noindent where $\widehat{y}$ is a value predicted by the surrogate, $y$ is the corresponding ``true value", and $T \neq 0$ is some domain-specific threshold. Finally, for any use case (i.e., any set of $\left\{(\widehat{y}_i,\;y_i)\right\}$), surrogate error can be expressed as
+
+\begin{equation}
+	\textrm{surrogate error} = \mu_\textrm{d-APE} + \text{IQR}_\textrm{d-APE}
 	\label{eqn:surrogate_error}
 \end{equation}
 
-\noindent where $\mu$ and $\sigma$ are statistics derived from a Monte Carlo approach (for fixed choice of surrogate architecture, sampling scheme, sample size, and problem dimensionality, random combinations of samples of size $S>0$ and benchmark problems of dimensionality $D>0$) \textcolor{red}{I'll include the code (\texttt{.py}) for these bits, for the sake of reproducibility. As for surrogate architecture, maybe just pick one to keep the degrees of freedom under control? With the benchmark problems I plan on picking (maybe three or four of them), the use case is regression, so perhaps just \texttt{sklearn.neural\_network.MLPRegressor} to keep it simple(ish)? Pretty much every surrogate is some kind of (prefix)-NN++(etc.) these days anyways ...}
+\noindent where $\mu_\textrm{d-APE} \geq 0$ is the mean of the d-APE values (i.e., a measure of surrogate accuracy) and $\text{IQR}_\textrm{d-APE} \geq 0$ is the inter-quartile range of the d-APE values (i.e., a measure of surrogate precision).
 
 \subsubsection{Surrogate Cost}
 
-[...]
+If one assumes that the cost of building a surrogate is dominated by the computational expense of sampling the objective function, then it follows that surrogate cost is proportional to the number of samples. This logic is sketched out in (\ref{eqn:surrogate_cost_concept})
 
 \begin{equation}
-	\textrm{surrogate cost} \propto S
+	\textrm{surrogate cost} \propto N
 	\label{eqn:surrogate_cost_concept}
 \end{equation}
 
-\noindent $S>0$ is number of sample points (i.e., expensive objective evaluations)
+\noindent where $N > 0$ is the number of samples (i.e., the number of objective function calls).
 
-\subsection{Proposed Efficiency Metric Expression}
+\subsection{General Surrogate Efficiency Metric: Proposition}
 
-[...]
+Given the preceding concepts, the following expression for a general surrogate efficiency metric is proposed:
 
 \begin{equation}
-	\eta_\textrm{SM} = \exp\left[-S(\mu_\textrm{d-MAPE} + \sigma_\textrm{d-MAPE})\right]
+	\eta_\textrm{SM} = \exp\left[-\sqrt[D]{N}(\mu_\textrm{d-APE} + \textrm{IQR}_\textrm{d-APE})\right]
 	\label{eqn:efficiency_proposition}
 \end{equation}
 
-\noindent Desirable properties
+\noindent where $D>0$ is the problem dimensionality (i.e., number of objective function inputs). Observe that the expression proposed in (\ref{eqn:efficiency_proposition}) has the following desirable properties:
 
 \begin{itemize}
-	\item $\eta_\textrm{SM}\in[0,1]$ for all $S,\mu_\textrm{d-MAPE},\sigma_\textrm{d-MAPE}\geq 0$.
-	\item For any $S>0$, $\eta_\textrm{SM}\to 1$ as $\mu_\textrm{d-MAPE} + \sigma_\textrm{d-MAPE}\to 0$.
-	\item For any $\mu_\textrm{d-MAPE} + \sigma_\textrm{d-MAPE}>0$, $\eta_\textrm{SM}\to 0$ as $S\to\infty$.
+	\item $\eta_\textrm{SM} \in [0,1]$ for any values of $D$, $N$, $\mu_\textrm{d-APE}$, and $\textrm{IQR}_\textrm{d-APE}$.
+	\item For any $\sqrt[D]{N} > 0$, $\eta_\textrm{SM} \to 1$ as $\mu_\textrm{d-APE} + \textrm{IQR}_\textrm{d-APE} \to 0$. That is, increasing surrogate utility is rewarded.
+	\item For any $\mu_\textrm{d-APE} + \textrm{IQR}_\textrm{d-APE} > 0$, $\eta_\textrm{SM} \to 0$ as $\sqrt[D]{N} \to \infty$. That is, increasing surrogate cost is penalized.
 \end{itemize}
 
 \subsection{Sampling Schemes}
