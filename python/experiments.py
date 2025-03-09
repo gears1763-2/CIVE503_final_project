@@ -11,6 +11,7 @@ Script of numerical experiments.
 
 # ==== IMPORTS ============================================================== #
 
+import os
 import sys
 sys.path.append("python/")
 
@@ -27,8 +28,8 @@ import funclib as flib
 
 # ==== CONSTANTS ============================================================ #
 
-PATH_2_CHECKPOINT = "checkpoint.torch"
-PATH_2_DATAFRAME = "results_dataframe.csv"
+PATH_2_CHECKPOINT = "../data/checkpoint.torch"
+PATH_2_DATAFRAME = "../data/results_dataframe.csv"
 
 
 # ==== FUNCTIONS ============================================================ #
@@ -159,7 +160,8 @@ def trainSurrogate(
     validation_size: float = 0.15,
     hidden_layer_neurons: int = 100,
     num_epochs: int = 10000,
-    patience_epochs: int = 2000,
+    patience_epochs: int = 1000,
+    batch_size: int = int(1e120),
     print_flag: bool = False
 ) -> torch.nn.Sequential:
     """
@@ -186,9 +188,13 @@ def trainSurrogate(
     num_epochs: int, optional, default 10000
         The maximum number of training epochs.
 
-    patience_epochs: int, optional, default 2000
+    patience_epochs: int, optional, default 1000
         Tolerance on number epochs for which there is no reduction in the
         validaction loss metric. Used to trigger early stopping.
+
+    batch_size: int, optional, default "infinity"
+        The batch size to use in training. Defaults to using the entire data
+        set in one shot (i.e., no batching).
 
     print_flag: bool, optional, default False
         A boolean which indicates whether or not to do running prints.
@@ -286,7 +292,7 @@ def trainSurrogate(
         target_array_valid.astype(np.float32, casting="same_kind")
     )
 
-    #   9. train model (using validation)
+    #   9. train model (using validation and early stopping)
     if print_flag:
         print("\tTraining surrogate ...")
 
@@ -296,23 +302,62 @@ def trainSurrogate(
     best_valid_loss = np.inf
 
     for epoch in range(num_epochs):
-        if print_flag:
-            print("\t\tepoch:", epoch + 1, end="")
+        batch_start_idx = 0
+        batch_end_idx = batch_size
+        batch_max_idx = input_tensor_train_norm.shape[0]
 
-        #   9.1. back propogation using training loss
-        prediction_tensor_train = surrogate(input_tensor_train_norm)
+        if batch_end_idx > batch_max_idx:
+            batch_end_idx = batch_max_idx
 
-        train_loss = loss_func(
-            prediction_tensor_train,
-            target_tensor_train
-        )
+        #   9.1. back propogation using batch training loss
+        while batch_end_idx <= batch_max_idx:
+            input_tensor_train_norm_batch = (
+                input_tensor_train_norm[batch_start_idx : batch_end_idx, :]
+            )
 
-        if print_flag:
-            print("  training loss:", round(train_loss.item(), 5), end="")
+            target_tensor_train_batch = (
+                target_tensor_train[batch_start_idx : batch_end_idx, :]
+            )
 
-        optimizer.zero_grad()
-        train_loss.backward()
-        optimizer.step()
+            if (
+                input_tensor_train_norm_batch.shape[0] == 0
+                or target_tensor_train_batch.shape[0] == 0
+            ):
+                break
+
+            prediction_tensor_train_batch = surrogate(input_tensor_train_norm_batch)
+
+            train_loss = loss_func(
+                prediction_tensor_train_batch,
+                target_tensor_train_batch
+            )
+
+            optimizer.zero_grad()
+            train_loss.backward()
+            optimizer.step()
+
+            batch_start_idx = batch_end_idx
+            batch_end_idx += batch_size
+
+            if batch_end_idx > batch_max_idx:
+                batch_end_idx = batch_max_idx
+
+            if print_flag:
+                print("\t\t(trial {})".format(trial), end="")
+                print("  epoch:", epoch + 1, end="")
+
+                print(
+                    "  training loss:",
+                    round(train_loss.item(), 5),
+                    end=""
+                )
+
+                print(
+                    "  ({} % of batches)".format(
+                        round(100 * (batch_end_idx / batch_max_idx))
+                    ),
+                    end="\r"
+                )
 
         #   9.2. compute validation loss
         prediction_tensor_valid = surrogate(input_tensor_valid_norm)
@@ -323,6 +368,9 @@ def trainSurrogate(
         )
 
         if print_flag:
+            print("\t\t(trial {})".format(trial), end="")
+            print("  epoch:", epoch + 1, end="")
+            print("  training loss:", round(train_loss.item(), 5), end="")
             print("  validation loss:", round(valid_loss.item(), 5), end="")
 
         #   9.3. handle checkpoints
@@ -336,7 +384,7 @@ def trainSurrogate(
             no_improvement_epochs += 1
 
         if print_flag:
-            print("", end="\r", flush=True)
+            print()
 
         #   9.4. handle early stopping
         if no_improvement_epochs > patience_epochs:
@@ -534,7 +582,7 @@ def runTrial(
     validation_size: float = 0.15,
     hidden_layer_neurons: int = 100,
     num_epochs: int = 10000,
-    patience_epochs: int = 2000,
+    patience_epochs: int = 1000,
     print_flag: bool = False
 ) -> dict:
     """
@@ -580,7 +628,7 @@ def runTrial(
     num_epochs: int, optional, default 10000
         The maximum number of training epochs.
 
-    patience_epochs: int, optional, default 2000
+    patience_epochs: int, optional, default 1000
         Tolerance on number epochs for which there is no reduction in the
         validaction loss metric. Used to trigger early stopping.
 
@@ -743,45 +791,54 @@ if __name__ == "__main__":
 
     dimensionality_list = [2, 3, 4, 5, 6]
 
-    logging_dict = {}
+    if os.path.isfile(PATH_2_DATAFRAME):
+        logging_dataframe = pd.read_csv(PATH_2_DATAFRAME)
+        logging_dict = logging_dataframe.to_dict(orient="list")
+        skip_trials = len(logging_dict["Benchmark Problem"])
+
+    else:
+        logging_dict = {}
+        skip_trials = 0
 
     trial = 1
 
     for benchmark_problem in benchmark_problem_list:
         for sampling_scheme in sampling_scheme_list:
             for D in dimensionality_list:
-                for N in [
-                    5, 6, 7, 8, 9, 10,
-                    5 * D, 6 * D, 7 * D, 8 * D, 9 * D, 10 * D,
-                    5 ** D, 6 ** D, 7 ** D, 8 ** D, 9 ** D, 10 ** D
-                ]:
-                    for iter in range(0, 50):
-                        """
-                        runTrial(
-                            trial: int,
-                            number_of_samples: int,
-                            dimensionality: int,
-                            objective_func: str,
-                            sampling_scheme: str,
-                            logging_dict: dict,
-                            space_bounds: tuple = (-5, 5),
-                            test_size: float = 0.15,
-                            validation_size: float = 0.15,
-                            hidden_layer_neurons: int = 100,
-                            num_epochs: int = 10000,
-                            patience_epochs: int = 2000,
-                            print_flag: bool = False
-                        ) -> dict:
-                        """
+                samples_list_1 = [i * D for i in range(3, 11)]
+                samples_list_2 = [i ** D for i in range(3, 11)]
+                samples_list = samples_list_1 + samples_list_2
 
-                        logging_dict = runTrial(
-                            trial,
-                            N,
-                            D,
-                            benchmark_problem,
-                            sampling_scheme,
-                            logging_dict
-                        )
+                for N in samples_list:
+                    for iter in range(0, 50):
+                        if trial > skip_trials:
+                            """
+                            runTrial(
+                                trial: int,
+                                number_of_samples: int,
+                                dimensionality: int,
+                                objective_func: str,
+                                sampling_scheme: str,
+                                logging_dict: dict,
+                                space_bounds: tuple = (-5, 5),
+                                test_size: float = 0.15,
+                                validation_size: float = 0.15,
+                                hidden_layer_neurons: int = 100,
+                                num_epochs: int = 10000,
+                                patience_epochs: int = 1000,
+                                print_flag: bool = False
+                            ) -> dict:
+                            """
+
+                            logging_dict = runTrial(
+                                trial,
+                                N,
+                                D,
+                                benchmark_problem,
+                                sampling_scheme,
+                                logging_dict,
+                                print_flag=False
+                            )
 
                         trial += 1
 

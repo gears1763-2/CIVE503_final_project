@@ -254,16 +254,15 @@ $$ \left(\underbrace{100, 100, \cdots, 100}_{D\;\textrm{times}}\right) $$
 
 \subsubsection{Monte Carlo}
 
-In order to test (\ref{eqn:efficiency_proposition}) and address question 2, a Monte Carlo approach is taken. This approach can be summarized in the following pseudocode:
+In order to test (\ref{eqn:efficiency_proposition}) and address question 2, a full factorial Monte Carlo approach is taken. This approach can be summarized in the following pseudocode:
 
 \begin{verbatim}
 for benchmark_problem in benchmark_list:
   for sampling_scheme in scheme_list:
     for D in [2, 3, 4, 5, 6]:
       for N in unique[
-      	5, 6, 7, ..., 10,
-      	5D, 6D, 7D, ..., 10D,
-      	5^D, 6^D, 7^D, ..., 10^D
+      	3D, 4D, 5D, ..., 10D,
+      	3^D, 4^D, 5^D, ..., 10^D
       ]:
         for trial = 1 ... 50:
           sample objective, get data;
@@ -283,7 +282,7 @@ for benchmark_problem in benchmark_list:
           log results;
 \end{verbatim}
 
-\noindent That is, for every combination of benchmark problem, sampling scheme, dimensionality, and number of samples, do 50 Monte Carlo trials of sample (some randomness here), split (some randomness here), train (some randomness here), and test. By way of this approach, a results table with $4\times 2\times 5\times 18\times 50 = 36,000$ rows is generated.
+\noindent That is, for every combination of benchmark problem, sampling scheme, dimensionality, and number of samples, do 50 Monte Carlo trials of sample (some randomness here), split (some randomness here), train (some randomness here), and test. By way of this approach, a results table with $4\times 2\times 5\times 16\times 50 = 32,000$ rows is generated.
 
 \section{Results}
 
