@@ -5,7 +5,7 @@ Python Certified Professional Programmer (PCPP1)
 Copyright 2025 - Anthony Truelove  
 --> ***SEE LICENSE TERMS [HERE](../../../LICENSE)*** <--
 
-Library of optimization test functions.
+Library of optimization test functions together with various utility functions.
 """
 
 
