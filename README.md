@@ -19,12 +19,15 @@ In the directory for this project, you should find this README, a LICENSE file,
 a bash script for generating the Python documentation, and the following
 sub-directories:
 
-    data/       For holding data sets generated in the course of this project.
+    data/           For holding data sets generated in the course of this
+                    project.
 
-    python/     For holding the supporting Python scripts (including tests and
-                documentation).
+    presentation/   For holding presentations given in regards to this work.
 
-    tex/        For holding the main paper (including source and assets).
+    python/         For holding the supporting Python scripts (including tests
+                    and documentation).
+
+    tex/            For holding the main paper (including source and assets).
 
 --------
 
