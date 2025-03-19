@@ -8,16 +8,25 @@
 	\graphicspath{
 		{../figures}
 	}
+\usepackage{hyperref}
 \usepackage{lineno}
 \usepackage{textcomp}
 \usepackage{url}
 \usepackage{xcolor}
+
 \def\BibTeX{
 	{
 		\rm B\kern-.05em{\sc i\kern-.025em b}
 		\kern-.08em T\kern-.1667em\lower.7ex
 		\hbox{E}\kern-.125emX
     }
+}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue
 }
 
 
@@ -298,7 +307,16 @@ for benchmark_problem in benchmark_list:
 
 \section{Future Work}
 
-[...]
+[...] maybe something more like
+
+\begin{equation}
+	\eta_\textrm{SM} = \begin{cases}
+		\exp\left[N\left(\mu_\textrm{d-APE} + \textrm{IQR}_\textrm{d-APE}\right)\right] & \textrm{if}\;\;D=1 \\
+		{} & {} \\
+		\exp\left[\frac{N}{D\log_2(D)}\left(\mu_\textrm{d-APE} + \textrm{IQR}_\textrm{d-APE}\right)\right] & \textrm{otherwise}
+	\end{cases}
+	\label{eqn:efficiency_proposition_2}
+\end{equation}
 
 
 %%%% ==== REFERENCES ================================================================ %%%%
