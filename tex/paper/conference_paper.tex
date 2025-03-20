@@ -311,11 +311,18 @@ for benchmark_problem in benchmark_list:
 
 \begin{equation}
 	\eta_\textrm{SM} = \begin{cases}
-		\exp\left[N\left(\mu_\textrm{d-APE} + \textrm{IQR}_\textrm{d-APE}\right)\right] & \textrm{if}\;\;D=1 \\
+		\exp\left[-N\left(\mu_\textrm{d-APE} + \textrm{IQR}_\textrm{d-APE}\right)\right] & \textrm{if}\;\;D=1 \\
 		{} & {} \\
-		\exp\left[\frac{N}{D\log_2(D)}\left(\mu_\textrm{d-APE} + \textrm{IQR}_\textrm{d-APE}\right)\right] & \textrm{otherwise}
+		\exp\left[-\frac{N}{D\log_2(D)}\left(\mu_\textrm{d-APE} + \textrm{IQR}_\textrm{d-APE}\right)\right] & \textrm{otherwise}
 	\end{cases}
 	\label{eqn:efficiency_proposition_2}
+\end{equation}
+
+\noindent or even just
+
+\begin{equation}
+	\eta_\textrm{SM} = \exp\left[-\frac{N}{D^2}\left(\mu_\textrm{d-APE} + \textrm{IQR}_\textrm{d-APE}\right)\right]
+	\label{eqn:efficiency_proposition_3}
 \end{equation}
 
 
