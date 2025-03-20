@@ -51,7 +51,7 @@ wtruelove@uvic.ca}}
 %%%% ==== ABSTRACT & KEYWORDS ======================================================= %%%%
 
 \begin{abstract}
-[...]
+Surrogate modelling has taken hold in a variety of domains in recent years, with model-based design optimization being a particularly fruitful application. That said, while the notions of ``sampling efficiency" and ``surrogate efficiency" have appeared in the body of surrogate modelling literature, a precise and general metric for these notions has not yet appeared. Therefore, this work addresses two questions: (1) Is there a general metric for surrogate efficiency?, and (2) Is there a clear ``winner", with respect to surrogate efficiency, in terms of sampling scheme?. To address these questions, a general expression for surrogate efficiency is first proposed. Then, a set of numerical experiments is designed which seeks to test the proposed efficiency expression in application to instances of surrogate modelling for some optimization benchmark problems. In total, four benchmark problems (Rastrigin, Rosenbrock, Griewank, and Styblinski-Tang), two sampling schemes (simple random and latin hypercube), and five levels of dimensionality (2, 3, 4, 5, 6) are considered, together with a neural network as the surrogate. The results obtained from the numerical experiments suggest that the proposed efficiency expression is both general and useful as a performance metric (and so the answer to question 1 is yes). For instance, results suggest that for the $D = 4$ dimensional Rastrigin function defined on $[-5, 5]^4$, surrogate efficiency is maximized by a sample size $N$ such that $\sqrt[D]{N} = 4$ (i.e., $N = 256$). Corresponding results for Rosenbrock, Griewank, and Styblinski-Tang are $\sqrt[D]{N} = 6$, $\sqrt[D]{N} = 11$, and $\sqrt[D]{N} = 5$ respectively. That said, the results also show that varying the sampling scheme between either simple random or latin hypercube has little to no impact on the resulting surrogate efficiencies (and so the answer to question 2 is no).
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -73,7 +73,7 @@ sampling, optimization, surrogate modelling
 \begin{enumerate}
 	\item Is there a general metric for surrogate efficiency?
 	\item []
-	\item Is there a clear ``winner" in terms of sampling scheme?
+	\item Is there a clear ``winner", with respect to surrogate efficiency, in terms of sampling scheme?
 \end{enumerate}
 
 \noindent This work aims to address both questions.
@@ -227,7 +227,7 @@ The benchmarks selected in this work are
 	\noindent where $A = 16$ and $B = 5$.
 \end{itemize}
 
-The benchmarks are illustrated (for the case $D = 2$ and $\vec{x} \in [-5, 5]^D$) in Figures \ref{fig:Rastrigin} - \ref{fig:Styblinski–Tang}.
+The benchmarks are illustrated (for the case $D = 2$ and $\vec{x} \in [-5, 5]^D$) in Figures \ref{fig:Rastrigin} - \ref{fig:Styblinski–Tang}. Note that throughout this work, all benchmark problems are restricted to the domain $[-5, 5]^D$.
 
 \begin{figure}[htbp]
 	\centerline{\includegraphics[width=0.5\textwidth]{benchmarks/test_Rastrigin.png}}
@@ -295,19 +295,86 @@ for benchmark_problem in benchmark_list:
 
 \section{Results}
 
-[...]
+The described full factorial Monte Carlo approach was carried out, and 30,800 rows of data were ultimately obtained. The scripts, data, and all visualizations are available on the GitHub repo. Figures \ref{fig:Rastrigin_results_simple_random} - \ref{fig:Styblinski-Tang_results_latin_hypercube} show a selection of results, namely the $\mathbb{R}^4\to\mathbb{R}$ cases for each benchmark and sampling scheme.
+
+\begin{figure}[htbp]
+	\centerline{\includegraphics[width=0.5\textwidth]{results/rastrigin/results_sampling_simple_random_dimensionality_4.png}}
+	\caption{Results for the Rastrigin function ($\mathbb{R}^4\to\mathbb{R}$) under simple random sampling.}
+	\label{fig:Rastrigin_results_simple_random}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centerline{\includegraphics[width=0.5\textwidth]{results/rosenbrock/results_sampling_simple_random_dimensionality_4.png}}
+	\caption{Results for the Rosenbrock function ($\mathbb{R}^4\to\mathbb{R}$) under simple random sampling.}
+	\label{fig:Rosenbrock_results_simple_random}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centerline{\includegraphics[width=0.5\textwidth]{results/griewank/results_sampling_simple_random_dimensionality_4.png}}
+	\caption{Results for the Griewank function ($\mathbb{R}^4\to\mathbb{R}$) under simple random sampling.}
+	\label{fig:Griewank_results_simple_random}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centerline{\includegraphics[width=0.5\textwidth]{results/styblinskitang/results_sampling_simple_random_dimensionality_4.png}}
+	\caption{Results for the Styblinski-Tang function ($\mathbb{R}^4\to\mathbb{R}$) under simple random sampling.}
+	\label{fig:Styblinski-Tang_results_simple_random}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centerline{\includegraphics[width=0.5\textwidth]{results/rastrigin/results_sampling_latin_hypercube_dimensionality_4.png}}
+	\caption{Results for the Rastrigin function ($\mathbb{R}^4\to\mathbb{R}$) under latin hypercube sampling.}
+	\label{fig:Rastrigin_results_latin_hypercube}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centerline{\includegraphics[width=0.5\textwidth]{results/rosenbrock/results_sampling_latin_hypercube_dimensionality_4.png}}
+	\caption{Results for the Rosenbrock function ($\mathbb{R}^4\to\mathbb{R}$) under latin hypercube sampling.}
+	\label{fig:Rosenbrock_results_latin_hypercube}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centerline{\includegraphics[width=0.5\textwidth]{results/griewank/results_sampling_latin_hypercube_dimensionality_4.png}}
+	\caption{Results for the Griewank function ($\mathbb{R}^4\to\mathbb{R}$) under latin hypercube sampling.}
+	\label{fig:Griewank_results_latin_hypercube}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centerline{\includegraphics[width=0.5\textwidth]{results/styblinskitang/results_sampling_latin_hypercube_dimensionality_4.png}}
+	\caption{Results for the Styblinski-Tang function ($\mathbb{R}^4\to\mathbb{R}$) under latin hypercube sampling.}
+	\label{fig:Styblinski-Tang_results_latin_hypercube}
+\end{figure}
 
 \section{Discussion}
 
-[...]
+An inspection of Figures \ref{fig:Rastrigin_results_simple_random} - \ref{fig:Styblinski-Tang_results_latin_hypercube} reveals a few expected results. First, there is a high degree of variance within the Monte Carlo trials of a given sample size for small samples, with the variance tending to decrease as sample size increases. There are also noticeable differences between the simple random sampling results and the latin hypercube results for small samples. Beyond a certain sample size, however, the results appear similar for both sampling schemes.
+
+An inspection of Figures \ref{fig:Rastrigin_results_simple_random} - \ref{fig:Styblinski-Tang_results_latin_hypercube} also reveals a few interesting results. If one ignores the high variance region associated with small sample sizes, the surrogate efficiency for Rastrigin seems to attain a maximum around $\sqrt[D]{N} = 4$. Similarily, for Rosenbrock it appears to be around $\sqrt[D]{N} = 6$, and for Griewank it appears to be around $\sqrt[D]{N} = 11$. For Styblinski-Tang, it appears to be around $\sqrt[D]{N} = 4$ or 5, but the surrogate efficiency for this model also appears to be quite low across the range of sample sizes considered (thus suggesting that the choice of surrogate model architecture was a poor one for the Styblinski-Tang use case).
 
 \section{Conclusion}
 
-[...]
+Recall the questions that this work set out to address; namely
+
+\begin{enumerate}
+	\item Is there a general metric for surrogate efficiency?
+	\item []
+	\item Is there a clear ``winner", with respect to surrogate efficiency, in terms of sampling scheme?
+\end{enumerate}
+
+Given the interesting results obtained, the proposed surrogate efficiency metric appears to behave in an ideal way. That is to say, it seems to work well over the set of benchmark problems chosen (i.e., it is general), and in each case it suggested an optimal sample size for a given benchmark, dimensionality, and sampling scheme (i.e., it is useful as a performance metric). Therefore, the answer to question 1 is yes (and the expression proposed in (\ref{eqn:efficiency_proposition}) seems to serve as a general metric).
+
+As for question 2, the answer is most likely no. For smaller sample sizes, the point stack means tend to exhibit less variance in the latin hypercube case than in the simple random sampling case, but the actual surrogate efficiency values obtained are very similar in both cases. In addition, as was previously observed, past a certain sampling size the sampling scheme had no discernible impact upon surrogate efficiency.
 
 \section{Future Work}
 
-[...] maybe something more like
+In reviewing the methodology and results of this work, it seems that the choice of $\sqrt[D]{N}$ in (\ref{eqn:efficiency_proposition}), while motivated by the consensus that problems increase in difficulty as their dimensionality increases (the so-called ``curse of dimensionality"), may have overestimated the degree to which difficulty increases in the number of dimensions. Therefore, rather than assuming that every problem difficulty scales like $\mathcal{O}(2^D)$, it would be more general to allow for problems to scale in various ways such as, for example, $\mathcal{O}(D^2)$ or $\mathcal{O}(D\log_2(D))$. This then suggests alternate expressions for surrogate efficiency such as 
+
+\begin{equation}
+	\eta_\textrm{SM} = \exp\left[-\frac{N}{D^2}\left(\mu_\textrm{d-APE} + \textrm{IQR}_\textrm{d-APE}\right)\right]
+	\label{eqn:efficiency_proposition_2}
+\end{equation}
+
+\noindent or
 
 \begin{equation}
 	\eta_\textrm{SM} = \begin{cases}
@@ -315,15 +382,18 @@ for benchmark_problem in benchmark_list:
 		{} & {} \\
 		\exp\left[-\frac{N}{D\log_2(D)}\left(\mu_\textrm{d-APE} + \textrm{IQR}_\textrm{d-APE}\right)\right] & \textrm{otherwise}
 	\end{cases}
-	\label{eqn:efficiency_proposition_2}
-\end{equation}
-
-\noindent or even just
-
-\begin{equation}
-	\eta_\textrm{SM} = \exp\left[-\frac{N}{D^2}\left(\mu_\textrm{d-APE} + \textrm{IQR}_\textrm{d-APE}\right)\right]
 	\label{eqn:efficiency_proposition_3}
 \end{equation}
+
+\noindent This then implies the following future work: experiment with modifying (\ref{eqn:efficiency_proposition}) and updating the full factorial Monte Carlo design to suit. For instance, consider changing the sampling size approach to something like
+
+\begin{verbatim}
+	for N in [
+	    3D, 4D, ..., 20D,
+	    3Dlog2(D), 4Dlog2(D), ..., 20Dlog2(D),
+	    3D^2, 4D^2, 	..., 20D^2
+	]
+\end{verbatim}
 
 
 %%%% ==== REFERENCES ================================================================ %%%%
