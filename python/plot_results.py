@@ -23,7 +23,7 @@ import pandas as pd
 
 # ==== CONSTANTS ============================================================ #
 
-PATH_2_DATA = "../data/results_dataframe_17Mar2025.csv"
+PATH_2_DATA = "../data/results_dataframe.csv"
 PATH_2_FIGURES = "../tex/figures/results/"
 
 
