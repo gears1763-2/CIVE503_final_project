@@ -34,7 +34,7 @@
 
 %%%% ==== TITLE & AUTHORSHIP ======================================================== %%%%
 
-\title{Efficient Sampling for Surrogate Modelling}
+\title{Surrogate Modelling Efficiency}
 
 \author{\IEEEauthorblockN{1\textsuperscript{st} Anthony Truelove}
 \IEEEauthorblockA{\textit{Pacific Regional Institute for Marine Energy Discovery (PRIMED)} \\
@@ -265,6 +265,7 @@ $$ \left(\underbrace{100, 100, \cdots, 100}_{D\;\textrm{times}}\right) $$
 
 In order to test (\ref{eqn:efficiency_proposition}) and address question 2, a full factorial Monte Carlo approach is taken. This approach can be summarized in the following pseudocode:
 
+\newpage
 \begin{verbatim}
 for benchmark_problem in benchmark_list:
   for sampling_scheme in scheme_list:
@@ -351,6 +352,8 @@ An inspection of Figures \ref{fig:Rastrigin_results_simple_random} - \ref{fig:St
 
 An inspection of Figures \ref{fig:Rastrigin_results_simple_random} - \ref{fig:Styblinski-Tang_results_latin_hypercube} also reveals a few interesting results. If one ignores the high variance region associated with small sample sizes, the surrogate efficiency for Rastrigin seems to attain a maximum around $\sqrt[D]{N} = 4$. Similarily, for Rosenbrock it appears to be around $\sqrt[D]{N} = 6$, and for Griewank it appears to be around $\sqrt[D]{N} = 11$. For Styblinski-Tang, it appears to be around $\sqrt[D]{N} = 4$ or 5, but the surrogate efficiency for this model also appears to be quite low across the range of sample sizes considered (thus suggesting that the choice of surrogate model architecture was a poor one for the Styblinski-Tang use case).
 
+Conversely, if one includes the high variance regions associated with small sample sizes, then for the cases of Rastrigin, Griewank, and Styblinski-Tang a number of the small-sample point stack means are greater than, or equal to, the corresponding large-sample point stack means. This indicates that surrogate modelling by way of ensemble methods (with each ensemble member being a small-sample surrogate) is particularly applicable to these use cases. Only the Rosenbrock case appears to buck this trend. That is to say, it is evidently better to use a single, large-sample surrogate for Rosenbrock.
+
 \section{Conclusion}
 
 Recall the questions that this work set out to address; namely
@@ -369,6 +372,7 @@ As for question 2, the answer is most likely no. For smaller sample sizes, the p
 
 In reviewing the methodology and results of this work, it seems that the choice of $\sqrt[D]{N}$ in (\ref{eqn:efficiency_proposition}), while motivated by the consensus that problems increase in difficulty as their dimensionality increases (the so-called ``curse of dimensionality"), may have overestimated the degree to which difficulty increases in the number of dimensions. Therefore, rather than assuming that every problem difficulty scales like $\mathcal{O}(2^D)$, it would be more general to allow for problems to scale in various ways such as, for example, $\mathcal{O}(D^2)$ or $\mathcal{O}(D\log_2(D))$. This then suggests alternate expressions for surrogate efficiency such as 
 
+\newpage
 \begin{equation}
 	\eta_\textrm{SM} = \exp\left[-\frac{N}{D^2}\left(\mu_\textrm{d-APE} + \textrm{IQR}_\textrm{d-APE}\right)\right]
 	\label{eqn:efficiency_proposition_2}
