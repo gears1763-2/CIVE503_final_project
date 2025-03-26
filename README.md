@@ -1,4 +1,4 @@
-# Efficient Sampling for Surrogate Modelling
+# Surrogate Modelling Efficiency
 
     Anthony Truelove MASc, P.Eng.
     Python Certified Professional Programmer (PCPP1)
